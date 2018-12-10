@@ -1,0 +1,137 @@
+---
+title: "R Notes: Data Visualization"
+author: "Praveen Kenderla"
+date: "12/8/18"
+output: html_notebook
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(fig.width = 8, fig.height = 5) # same for all plots!
+```
+
+```{r}
+library(tidyverse)
+library(socviz) # contains data sets for practice
+```
+
+```{r}
+
+library(gapminder)
+p <- ggplot(data = gapminder, mapping = aes(x = gdpPercap, y = lifeExp))
+p + geom_smooth() + geom_point()
+p + geom_point() + geom_smooth(method = "lm") + scale_x_log10()
+
+# labels function in the scale_x_log10 has lots of options: the ones we can use are comma's and dollars or just number and more. 
+# If we want to change the color of the points in the graph. Then we should make sure that the color function is applied outside the mapping variable: Check out this example for distinction. 
+
+
+p <- ggplot(data = gapminder, mapping = aes(x = gdpPercap, y = lifeExp, color = "purple"))
+p + geom_point() + geom_smooth(method = "loess") + scale_x_log10(
+) # function is mapping the variable to color aesthetic. So it assumes color purple is a varibale. So it creates a new category variable in our data. Purple string is given for every row. 
+
+p <- ggplot(data = gapminder, mapping = aes(x = gdpPercap, y = lifeExp))
+
+p + geom_smooth(color = "orange", se = FALSE, size = 8, method = "lm") + geom_point(alpha = 0.3) + scale_x_log10()
+
+p + geom_point(alpha = 0.3) + geom_smooth(method = "gam")
+
+p + geom_point(alpha = 0.3) + geom_smooth(method = "gam") + scale_x_log10(labels = scales::dollar)+ labs(x = "GDP Per Capita", y = "Life Expectancy in Years", title = "Economic growth and life expectancy", subtitle = "data points are country-years", caption = "Source: Gapminder.")
+# We can change x, y axis labels, add title, subtitle, source using labels function; 
+
+p <- ggplot(gapminder, aes(gdpPercap, lifeExp, color = continent))
+
+p + geom_point(size = 1, alpha = ) + geom_smooth(method = "loess") + scale_x_log10()
+
+#check what the difference when you add fill and color in for the same variable;
+p <- ggplot(gapminder, aes(gdpPercap, lifeExp, color = continent, fill = continent))
+
+p + geom_point() + geom_smooth(method = "loess") + scale_x_log10()
+
+# we can also map on geom instead of ggplot
+
+p <- ggplot(gapminder, aes(gdpPercap, lifeExp))
+
+p + geom_point(aes(color = continent)) + geom_smooth(method = "loess") + scale_x_log10()
+
+p + geom_point(aes(color = log(pop))) + scale_x_log10()
+
+# Saving ggplots: 
+
+#ggsave(filename = "my_figure.png") or .pdf file; 
+# here function allows you to save your plots in the concerned folders: 
+# example: ggsave(here("folders", sadasd.pdf), plot = plotname)
+
+
+p <- ggplot(gapminder, aes(gdpPercap, lifeExp, color = factor(year), fill = factor(year)))
+
+p + geom_smooth(method = "loess") + geom_point() + scale_x_log10()
+```
+
+
+
+# Chapter 4L Show the right numbers
+```{r}
+# Grouping
+# faceting
+# transforming
+
+
+# 4.1 Colorless green data sleeps furiously: 
+
+# 4.2 Grouping: 
+
+p <- ggplot(gapminder, aes(x = year, y  = gdpPercap))
+
+p + geom_line() # the lines you observe in the plot are due of non grouping the continent varibale. The geom_line function computes overall data points for all the year for all countries and plots them as a single line. We have to tell the geom to make sure it counts the gdpPercap for every year for each country. 
+
+p <- ggplot(gapminder, aes(year, gdpPercap))
+
+p + geom_line(aes(group = country))
+
+
+# 4.3 Faceting: Organizing series of geoms
+p <- ggplot(gapminder, aes(x = year, y = gdpPercap))
+p + geom_line(aes(group = country)) + facet_wrap(~continent)
+
+p + geom_line(color = "gray70", aes(group = country)) + 
+  geom_smooth(size = 1.1, method = "loess",se = FALSE) + 
+  scale_y_log10(labels = scales::dollar) + 
+  facet_wrap(~continent, ncol = 5) + 
+  labs(x = "year", y = "GDP", title = "GDP for 5 continents")
+
+
+glimpse(gss_sm) # data set to use for facet_grid function; 
+
+p <- ggplot(data = gss_sm, aes(age, childs))
+p + geom_point(alpha = 0.2) + geom_smooth() + facet_grid(sex~race)
+
+
+# 4.4 Geoms can transform data: 
+p <- ggplot(gss_sm, aes(bigregion)) # it gives the num of individual observations in a data set by counting it for each region. 
+p + geom_bar()
+p + geom_bar(aes(y = ..prop..))
+
+p + geom_bar(aes(y = ..prop.., group = 1))
+
+p <- ggplot(gss_sm, aes(x = religion, fill = religion))
+p + geom_bar() + guides(fill = FALSE)
+
+# 4.5 Frequency plots that slightly awkward way:
+
+p <- ggplot(gss_sm, aes(bigregion, fill = religion))
+p + geom_bar()
+
+p +geom_bar(position = "fill")
+
+p + geom_bar(position = "dodge", aes(y = ..prop..))
+
+p <- ggplot(gss_sm, aes(religion))
+p + geom_bar(position = "dodge", aes(y = ..prop.., group = bigregion)) + 
+  facet_wrap(~bigregion, ncol = 2)
+
+# 4.6 Histograms and density plots:
+
+
+```
+
